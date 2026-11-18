@@ -1,0 +1,24 @@
+tag f0c29c813a7ab637e18fc13f4eace028ae9c277e v1.0.5
+Author:	ray929 <41984067+ray929@users.noreply.github.com>
+Date:	Thu Nov 5 08:24:30 2026 +0800
+
+v1.0.5
+- fix: resolve the current specialization through C_SpecializationInfo, fixing the
+  'attempt to call a nil value' error loop on the Forever (Camelot) client where the
+  legacy GetSpecialization / GetSpecializationInfo globals do not exist
+- options window reads the spec name through the same compat layer
+
+commit 309ff0484af02a3e758a630b3b150380d5cf7c14
+Author: ray929 <41984067+ray929@users.noreply.github.com>
+Date:   Thu Nov 5 08:08:24 2026 +0800
+
+    fix(spec): use C_SpecializationInfo for spec lookup (Forever client)
+    
+    - Global GetSpecialization / GetSpecializationInfo are deprecated since 11.2.0
+      and absent on the Forever (Camelot, Interface 16001) client, so the hot path
+      Evaluate -> GetCurrentSpecID crashed with "attempt to call a nil value"
+    - Add CG.GetSpecInfo compat layer: C_SpecializationInfo.GetSpecialization /
+      GetSpecializationInfo first, legacy globals as fallback, 0 (generic slot)
+      when neither is available; never raises
+    - Options: resolve the spec name through CG.GetSpecInfo as well
+
