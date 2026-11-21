@@ -1,0 +1,7 @@
+package-as: QuickCooldownGlow
+
+ignore:
+  - .gitignore
+  - README.md
+  - CHANGES.txt
+  - pkgmeta.yaml
