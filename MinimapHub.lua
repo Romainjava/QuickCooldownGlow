@@ -35,13 +35,13 @@ local L = {
 if IS_CREATOR then
 
     local function DB()
-        if type(EasyMinimapHubDB) ~= "table" then
-            EasyMinimapHubDB = {}
+        if type(QuickCooldownGlowHubDB) ~= "table" then
+            QuickCooldownGlowHubDB = {}
         end
-        if EasyMinimapHubDB.angle == nil then
-            EasyMinimapHubDB.angle = 220
+        if QuickCooldownGlowHubDB.angle == nil then
+            QuickCooldownGlowHubDB.angle = 220
         end
-        return EasyMinimapHubDB
+        return QuickCooldownGlowHubDB
     end
     DB()
 
@@ -223,7 +223,7 @@ function HUB.Register(name, title, icon, toggle)
     if HUB.SetIcon then HUB.SetIcon(icon) end
 end
 
-HUB.Register(ADDON_NAME, "Easy Cooldown Glow 1s", "Interface\\AddOns\\EasyCooldownGlow1s\\ButtonIcon.tga", function()
+HUB.Register(ADDON_NAME, "Quick Cooldown Glow", "Interface\\AddOns\\QuickCooldownGlow\\ButtonIcon.tga", function()
     if EasyCooldownGlow and EasyCooldownGlow.ToggleConfigFrame then
         EasyCooldownGlow.ToggleConfigFrame()
     end

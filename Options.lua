@@ -12,7 +12,7 @@ local LIST_H = VISIBLE_ROWS * ROW_H
 
 local X_DUR, W_DUR = 150, 110
 
-local ADDON_TITLE = "Easy Cooldown Glow 1s"
+local ADDON_TITLE = "Quick Cooldown Glow"
 
 local STUB_W = 520
 
@@ -123,7 +123,7 @@ local function BuildRowList()
     end
     for id in pairs(CG.GetTrackedSpellIDs()) do add(id) end
     local specID = CG.GetCurrentSpecID()
-    local db = easyCooldownGlowDB
+    local db = quickCooldownGlowDB
     local specs = db and db.specs
     local durs = specs and specs[specID] and specs[specID].durations
     if durs then
@@ -361,6 +361,7 @@ local function RegisterSettings()
 end
 
 SLASH_EASYCOOLDOWNGLOW1 = "/ecg"
+SLASH_EASYCOOLDOWNGLOW2 = "/qcg"
 SlashCmdList["EASYCOOLDOWNGLOW"] = function()
     CG.ToggleConfigFrame()
 end

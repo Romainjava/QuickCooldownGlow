@@ -1,12 +1,12 @@
 ## Interface: 120100, 120105, 16001
-## Title: Easy Cooldown Glow 1s
+## Title: Quick Cooldown Glow
 ## Notes: Glow the action bar buttons of spells enabled in Blizzard's Cooldown Manager (Essential) when their cooldown finishes. Local build: unset spells default to a 1 second glow; Persistent/None are still selectable.
-## Author: ray929
+## Author: ray929 (original), Romainjava (Quick Cooldown Glow fork)
 ## Version: 1.0.5-local.1
-## SavedVariablesPerCharacter: easyCooldownGlowDB EasyMinimapHubDB
+## SavedVariablesPerCharacter: quickCooldownGlowDB QuickCooldownGlowHubDB
 ## DefaultState: enabled
 ## Category: Action Bars
-## IconTexture: Interface\AddOns\EasyCooldownGlow1s\Icon.tga
+## IconTexture: Interface\AddOns\QuickCooldownGlow\Icon.tga
 
 Libs\LibStub\LibStub.lua
 Libs\LibCustomGlow-1.0\LibCustomGlow-1.0.lua

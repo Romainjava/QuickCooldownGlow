@@ -64,7 +64,7 @@ local ScheduleEvaluate
 local SetExpiry
 
 function CG.EnsureDB()
-    easyCooldownGlowDB = easyCooldownGlowDB or {}
+    quickCooldownGlowDB = quickCooldownGlowDB or {}
 
 end
 
@@ -101,25 +101,25 @@ CG.GetCurrentSpecID = GetCurrentSpecID
 
 local function GetSpecSlot(specID)
     CG.EnsureDB()
-    local db = easyCooldownGlowDB
+    local db = quickCooldownGlowDB
     db.specs = db.specs or {}
     local spec = db.specs[specID] or {}
     db.specs[specID] = spec
     if spec.enabled == nil then
-        spec.enabled = (easyCooldownGlowDB.enabled ~= false)
+        spec.enabled = (quickCooldownGlowDB.enabled ~= false)
     end
     spec.durations = spec.durations or {}
     return spec
 end
 
 function CG.IsEnabled()
-    if not easyCooldownGlowDB then return nil end
-    local specs = easyCooldownGlowDB.specs
+    if not quickCooldownGlowDB then return nil end
+    local specs = quickCooldownGlowDB.specs
     local spec = specs and specs[GetCurrentSpecID()]
     if spec and spec.enabled ~= nil then
         return spec.enabled
     end
-    return easyCooldownGlowDB.enabled ~= false
+    return quickCooldownGlowDB.enabled ~= false
 end
 
 function CG.SetEnabled(v)
@@ -137,9 +137,9 @@ local function GetDurations(specID)
 end
 
 function CG.GetDuration(sid)
-    if not easyCooldownGlowDB then return 1 end
+    if not quickCooldownGlowDB then return 1 end
     local specID = GetCurrentSpecID()
-    local specs = easyCooldownGlowDB.specs
+    local specs = quickCooldownGlowDB.specs
     local durs = specs and specs[specID] and specs[specID].durations
     local v = durs and durs[sid]
     if v == nil then return 1 end
@@ -371,7 +371,7 @@ function CG.Evaluate()
 
     local tracked = GetTrackedSpellIDs()
     local specID = GetCurrentSpecID()
-    local specs = easyCooldownGlowDB and easyCooldownGlowDB.specs
+    local specs = quickCooldownGlowDB and quickCooldownGlowDB.specs
     local durs = (specs and specs[specID] and specs[specID].durations) or {}
 
     local shouldGlow = {}
