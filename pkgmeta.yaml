@@ -1,7 +1,13 @@
 package-as: QuickCooldownGlow
 
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
 ignore:
   - .gitignore
   - README.md
   - CHANGES.txt
+  - CHANGELOG.md
+  - LOCAL-PATCH.md
   - pkgmeta.yaml

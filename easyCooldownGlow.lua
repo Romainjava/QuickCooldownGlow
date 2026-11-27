@@ -154,6 +154,7 @@ local CLASS_IMPORTANT_COOLDOWNS = {
         19801,   -- Tranquilizing Shot
         5116,    -- Concussive Shot
         20736,   -- Distracting Shot
+        2973,    -- Raptor Strike
         1293241, -- Summon Hawk (Forever)
     },
     DRUID = {
@@ -1265,14 +1266,14 @@ local SID_INVALIDATE_EVENTS = {
     UPDATE_MACROS               = true,
     MODIFIER_STATE_CHANGED      = true,
     SPELLS_CHANGED              = true,
-    LEARNED_SPELL_IN_TAB        = true,
+    LEARNED_SPELL_IN_SKILL_LINE = true,
     PLAYER_TALENT_UPDATE        = true,
     ACTIVE_TALENT_GROUP_CHANGED = true,
 }
 
 local SPELLBOOK_INVALIDATE_EVENTS = {
     SPELLS_CHANGED              = true,
-    LEARNED_SPELL_IN_TAB        = true,
+    LEARNED_SPELL_IN_SKILL_LINE = true,
     PLAYER_TALENT_UPDATE        = true,
     ACTIVE_TALENT_GROUP_CHANGED = true,
 }
@@ -1524,28 +1525,33 @@ end
 
 local evFrame = CreateFrame("Frame")
 CG._evFrame = evFrame
-evFrame:RegisterEvent("PLAYER_LOGIN")
-evFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-evFrame:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
-evFrame:RegisterEvent("ACTIONBAR_PAGE_CHANGED")
-evFrame:RegisterEvent("UPDATE_BONUS_ACTIONBAR")
-evFrame:RegisterEvent("UPDATE_VEHICLE_ACTIONBAR")
-evFrame:RegisterEvent("UPDATE_POSSESS_BAR")
-evFrame:RegisterEvent("UPDATE_MACROS")
-evFrame:RegisterEvent("MODIFIER_STATE_CHANGED")
-evFrame:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-evFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
-evFrame:RegisterEvent("SPELL_UPDATE_CHARGES")
-evFrame:RegisterEvent("SPELLS_CHANGED")
-evFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
-evFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
-evFrame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
-evFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-evFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
+local REGISTERED_EVENTS = {
+    "PLAYER_LOGIN",
+    "PLAYER_ENTERING_WORLD",
+    "ACTIONBAR_SLOT_CHANGED",
+    "ACTIONBAR_PAGE_CHANGED",
+    "UPDATE_BONUS_ACTIONBAR",
+    "UPDATE_VEHICLE_ACTIONBAR",
+    "UPDATE_POSSESS_BAR",
+    "UPDATE_MACROS",
+    "MODIFIER_STATE_CHANGED",
+    "ACTIONBAR_UPDATE_COOLDOWN",
+    "SPELL_UPDATE_COOLDOWN",
+    "SPELL_UPDATE_CHARGES",
+    "SPELLS_CHANGED",
+    "LEARNED_SPELL_IN_SKILL_LINE",
+    "PLAYER_TALENT_UPDATE",
+    "ACTIVE_TALENT_GROUP_CHANGED",
+    "PLAYER_REGEN_ENABLED",
+    "PLAYER_REGEN_DISABLED",
+}
+for _, ev in ipairs(REGISTERED_EVENTS) do
+    pcall(evFrame.RegisterEvent, evFrame, ev)
+end
 if evFrame.RegisterUnitEvent then
-    evFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
+    pcall(evFrame.RegisterUnitEvent, evFrame, "UNIT_SPELLCAST_SUCCEEDED", "player")
 else
-    evFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+    pcall(evFrame.RegisterEvent, evFrame, "UNIT_SPELLCAST_SUCCEEDED")
 end
 
 evFrame:SetScript("OnEvent", function(_, event, arg1, _, arg3)
