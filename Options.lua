@@ -5,12 +5,12 @@ local L = CG.L
 
 local PANEL_W = 680
 local ROW_W   = PANEL_W - 44
-local ROW_H   = 40
+local ROW_H   = 36
 
-local VISIBLE_ROWS = 10
+local VISIBLE_ROWS = 11
 local LIST_H = VISIBLE_ROWS * ROW_H
 
-local X_DUR, W_DUR = 150, 110
+local W_DUR = 116
 
 local ADDON_TITLE = "Quick Cooldown Glow"
 
@@ -19,6 +19,12 @@ local STUB_W = 520
 local configFrame
 local rows = {}
 local refreshing = false
+
+local SOURCE_TAGS = {
+    trap      = { key = "TAG_TRAP",      r = 0.45, g = 0.85, b = 1.0  },
+    utility   = { key = "TAG_UTILITY",   r = 0.72, g = 0.78, b = 0.92 },
+    important = { key = "TAG_IMPORTANT", r = 1.0,  g = 0.82, b = 0.35 },
+}
 
 local function AddTip(widget, text)
     local prevEnter = widget:GetScript("OnEnter")
@@ -63,8 +69,8 @@ local function CreateRow(index)
     row:SetPoint("TOPLEFT", 0, -(index - 1) * ROW_H)
 
     row.icon = CreateFrame("Button", nil, row)
-    row.icon:SetSize(20, 20)
-    row.icon:SetPoint("BOTTOMLEFT", 6, 6)
+    row.icon:SetSize(22, 22)
+    row.icon:SetPoint("LEFT", 6, 0)
     row.icon.tex = row.icon:CreateTexture(nil, "ARTWORK")
     row.icon.tex:SetAllPoints()
     row.icon:SetScript("OnEnter", function(self)
@@ -84,13 +90,17 @@ local function CreateRow(index)
     row.name:SetPoint("LEFT", row.icon, "RIGHT", 8, 0)
     row.name:SetJustifyH("LEFT")
 
+    row.tag = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    row.tag:SetPoint("LEFT", row.name, "RIGHT", 8, 0)
+    row.tag:SetJustifyH("LEFT")
+
     row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    row.status:SetPoint("LEFT", row.name, "RIGHT", 10, 0)
+    row.status:SetPoint("LEFT", row.tag, "RIGHT", 8, 0)
     row.status:SetJustifyH("LEFT")
 
     row.durDd = CreateFrame("DropdownButton", nil, row, "WowStyle1DropdownTemplate")
     row.durDd:SetSize(W_DUR, 24)
-    row.durDd:SetPoint("BOTTOMLEFT", X_DUR, 4)
+    row.durDd:SetPoint("RIGHT", -28, 0)
     SetupDurMenu(row.durDd)
     AddTip(row.durDd, L("COL_DURATION"))
 
@@ -101,6 +111,15 @@ local function UpdateRow(row, spellID, barSet)
     row.name:SetText(CG.GetSpellDisplayName(spellID))
     row.icon.spellID = spellID
     row.icon.tex:SetTexture(CG.GetSpellIcon(spellID))
+
+    local src = CG.GetTrackedSource and CG.GetTrackedSource(spellID) or nil
+    local tagInfo = src and SOURCE_TAGS[src] or nil
+    if tagInfo then
+        row.tag:SetText("[" .. L(tagInfo.key) .. "]")
+        row.tag:SetTextColor(tagInfo.r, tagInfo.g, tagInfo.b)
+    else
+        row.tag:SetText("")
+    end
 
     if barSet and not barSet[spellID] then
         row.status:SetText(L("STATUS_NOT_ON_BAR"))
@@ -114,12 +133,14 @@ local function UpdateRow(row, spellID, barSet)
 end
 
 local function BuildRowList()
-    local seen, list = {}, {}
+    local seenID, seenName, list = {}, {}, {}
     local function add(id)
-        if id and not seen[id] then
-            seen[id] = true
-            list[#list + 1] = id
-        end
+        if not id or seenID[id] then return end
+        local name = CG.GetSpellName(id)
+        if name and seenName[name] then return end
+        seenID[id] = true
+        if name then seenName[name] = true end
+        list[#list + 1] = id
     end
     for id in pairs(CG.GetTrackedSpellIDs()) do add(id) end
     local specID = CG.GetCurrentSpecID()
@@ -152,6 +173,12 @@ local function DoRefresh()
 
     if configFrame.enableCheck then
         configFrame.enableCheck:SetChecked(CG.IsEnabled())
+    end
+    if configFrame.utilityCheck then
+        configFrame.utilityCheck:SetChecked(CG.IsUtilityEnabled())
+    end
+    if configFrame.importantCheck then
+        configFrame.importantCheck:SetChecked(CG.IsImportantEnabled())
     end
 
     local list = BuildRowList()
@@ -186,7 +213,7 @@ local function DoRefresh()
     end
 
     local pTop, rTop = configFrame:GetTop(), configFrame.scroll:GetTop()
-    local headerH = (pTop and rTop and pTop > rTop) and (pTop - rTop) or 110
+    local headerH = (pTop and rTop and pTop > rTop) and (pTop - rTop) or 116
     configFrame:SetSize(PANEL_W, headerH + LIST_H + 20)
 end
 
@@ -199,7 +226,7 @@ end
 
 local function BuildConfigFrame()
     configFrame = CreateFrame("Frame", "EasyCooldownGlowConfigFrame", UIParent, "BasicFrameTemplateWithInset")
-    configFrame:SetSize(PANEL_W, 320)
+    configFrame:SetSize(PANEL_W, 360)
     configFrame:SetPoint("TOP", UIParent, "TOP", 0, -120)
     configFrame:SetMovable(true)
     configFrame:EnableMouse(true)
@@ -213,19 +240,13 @@ local function BuildConfigFrame()
     local titleText = (configFrame.TitleContainer and configFrame.TitleContainer.TitleText) or configFrame.TitleText
     if titleText then titleText:SetText(ADDON_TITLE) end
 
-    configFrame.divTitle = configFrame:CreateTexture(nil, "ARTWORK")
-    configFrame.divTitle:SetColorTexture(0.7, 0.7, 0.7, 0.35)
-    configFrame.divTitle:SetSize(PANEL_W - 24, 1)
-    configFrame.divTitle:SetPoint("TOPLEFT", 12, -64)
-
     configFrame.specText = configFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     configFrame.specText:SetPoint("TOPLEFT", 16, -36)
 
     configFrame.enableCheck = CreateFrame("CheckButton", nil, configFrame, "UICheckButtonTemplate")
     configFrame.enableCheck:SetSize(24, 24)
-    configFrame.enableCheck:SetPoint("TOPRIGHT", -14, -36)
+    configFrame.enableCheck:SetPoint("TOPRIGHT", -14, -32)
     configFrame.enableLabel = configFrame.enableCheck:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-
     configFrame.enableLabel:SetPoint("RIGHT", configFrame.enableCheck, "LEFT", -4, 0)
     configFrame.enableLabel:SetText(L("ENABLE"))
     configFrame.enableCheck:SetScript("OnClick", function(self)
@@ -236,15 +257,52 @@ local function BuildConfigFrame()
         CG.SetEnabled(self:GetChecked() and true or false)
     end)
 
+    configFrame.utilityCheck = CreateFrame("CheckButton", nil, configFrame, "UICheckButtonTemplate")
+    configFrame.utilityCheck:SetSize(22, 22)
+    configFrame.utilityCheck:SetPoint("TOPLEFT", 14, -56)
+    configFrame.utilityLabel = configFrame.utilityCheck:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    configFrame.utilityLabel:SetPoint("LEFT", configFrame.utilityCheck, "RIGHT", 2, 0)
+    configFrame.utilityLabel:SetText(L("OPT_UTILITY"))
+    AddTip(configFrame.utilityCheck, L("TIP_UTILITY"))
+    configFrame.utilityCheck:SetScript("OnClick", function(self)
+        if InCombatLockdown() then
+            self:SetChecked(not self:GetChecked())
+            return
+        end
+        CG.SetUtilityEnabled(self:GetChecked() and true or false)
+        CG.RefreshPanel()
+    end)
+
+    configFrame.importantCheck = CreateFrame("CheckButton", nil, configFrame, "UICheckButtonTemplate")
+    configFrame.importantCheck:SetSize(22, 22)
+    configFrame.importantCheck:SetPoint("LEFT", configFrame.utilityLabel, "RIGHT", 18, 0)
+    configFrame.importantLabel = configFrame.importantCheck:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    configFrame.importantLabel:SetPoint("LEFT", configFrame.importantCheck, "RIGHT", 2, 0)
+    configFrame.importantLabel:SetText(L("OPT_IMPORTANT"))
+    AddTip(configFrame.importantCheck, L("TIP_IMPORTANT"))
+    configFrame.importantCheck:SetScript("OnClick", function(self)
+        if InCombatLockdown() then
+            self:SetChecked(not self:GetChecked())
+            return
+        end
+        CG.SetImportantEnabled(self:GetChecked() and true or false)
+        CG.RefreshPanel()
+    end)
+
+    configFrame.divTitle = configFrame:CreateTexture(nil, "ARTWORK")
+    configFrame.divTitle:SetColorTexture(0.7, 0.7, 0.7, 0.35)
+    configFrame.divTitle:SetSize(PANEL_W - 24, 1)
+    configFrame.divTitle:SetPoint("TOPLEFT", 12, -84)
+
     configFrame.noSpells = configFrame:CreateFontString(nil, "OVERLAY", "GameFontDisable")
-    configFrame.noSpells:SetPoint("TOPLEFT", configFrame.specText, "BOTTOMLEFT", 0, -18)
+    configFrame.noSpells:SetPoint("TOPLEFT", 18, -96)
     configFrame.noSpells:SetWidth(PANEL_W - 40)
     configFrame.noSpells:SetJustifyH("LEFT")
     configFrame.noSpells:SetText(L("NO_SPELLS"))
     configFrame.noSpells:Hide()
 
     configFrame.scroll = CreateFrame("ScrollFrame", "EasyCooldownGlowConfigScroll", configFrame, "UIPanelScrollFrameTemplate")
-    configFrame.scroll:SetPoint("TOPLEFT", configFrame.specText, "BOTTOMLEFT", 8, -26)
+    configFrame.scroll:SetPoint("TOPLEFT", 16, -92)
     configFrame.scroll:SetSize(ROW_W, LIST_H)
     configFrame.scroll:EnableMouseWheel(true)
     configFrame.scroll:SetScript("OnMouseWheel", function(self, delta)
@@ -291,11 +349,10 @@ function CG.ToggleConfigFrame()
     if configFrame:IsShown() then
         configFrame:Hide()
     else
-
-    if EasyMinimapHub and EasyMinimapHub.NotifyConfigFrameShown then
-        EasyMinimapHub.NotifyConfigFrameShown(configFrame)
-    end
-    configFrame:Show()
+        if EasyMinimapHub and EasyMinimapHub.NotifyConfigFrameShown then
+            EasyMinimapHub.NotifyConfigFrameShown(configFrame)
+        end
+        configFrame:Show()
     end
 end
 
@@ -362,8 +419,15 @@ end
 
 SLASH_EASYCOOLDOWNGLOW1 = "/ecg"
 SLASH_EASYCOOLDOWNGLOW2 = "/qcg"
-SlashCmdList["EASYCOOLDOWNGLOW"] = function()
-    CG.ToggleConfigFrame()
+SlashCmdList["EASYCOOLDOWNGLOW"] = function(msg)
+    local cmd = type(msg) == "string" and string.lower(string.gsub(msg, "^%s*(.-)%s*$", "%1")) or ""
+    if cmd == "test" then
+        if CG.TestGlow then CG.TestGlow() end
+    elseif cmd == "debug" then
+        if CG.PrintDebug then CG.PrintDebug() end
+    else
+        CG.ToggleConfigFrame()
+    end
 end
 
 local boot = CreateFrame("Frame")

@@ -4,10 +4,11 @@ Local fork of **Easy Cooldown Glow** 1.0.5 by [ray929](https://github.com/ray929
 as **Quick Cooldown Glow** (addon folder `QuickCooldownGlow`) so it can sit next to the
 original addon, for **World of Warcraft: Forever** (1.60.1).
 
-- Tracks the spells enabled in Blizzard's Cooldown Manager (Essential cooldowns).
+- Tracks the spells enabled in Blizzard's Cooldown Manager (**Essential** and **Utility** cooldowns).
+- Also tracks learned **traps**, **important class cooldowns**, and **combat racials** (with multi-rank & macro support, all 8 Blizzard action bars, and combat secret-value fallbacks).
 - Glows their action bar button when the cooldown finishes.
-- **Default glow is now 1 second** for spells you have not configured.
-- `Persistent` and `None` are still selectable per spell in `/ecg` (or `/qcg`).
+- **Default glow is 1 second** for spells you have not configured.
+- `Persistent` and `None` are still selectable per spell in `/qcg` (or `/ecg`).
 
 The original `easyCooldownGlow` folder is kept outside `AddOns`, so the addon
 manager does not update this patched copy.
